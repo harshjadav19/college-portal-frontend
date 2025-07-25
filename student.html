@@ -4,46 +4,159 @@
   <meta charset="UTF-8" />
   <title>Student Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Chart.js, jsPDF, html2canvas -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <style>
-    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-    body { margin: 0; background: #f7f9fc; color: #333; }
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    body {
+      margin: 0;
+      background: #f0f4f8;
+      color: #333;
+      scroll-behavior: smooth;
+    }
     header {
       background: linear-gradient(to right, #4f46e5, #3b82f6);
-      color: white; padding: 20px; text-align: center;
-      position: relative; font-size: 24px; font-weight: bold;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     .logout-btn {
-      position: absolute; right: 20px; top: 20px;
-      background: #ef4444; color: white; border: none;
-      padding: 8px 16px; border-radius: 8px; cursor: pointer;
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
     }
-    .logout-btn:hover { background: #dc2626; }
+    .logout-btn:hover {
+      background: #dc2626;
+    }
     .container {
-      max-width: 1200px; margin: 30px auto;
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: 20px; padding: 0 20px;
+      max-width: 1200px;
+      margin: 30px auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 20px;
+      padding: 0 20px;
     }
     .card {
-      background: white; padding: 20px;
-      border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transition: transform 0.3s;
+      animation: fadeIn 0.6s ease;
     }
-    .card h3 { color: #4f46e5; margin-bottom: 10px; }
-    .card form { display: flex; flex-direction: column; }
+    .card:hover {
+      transform: scale(1.02);
+    }
+    .card h3 {
+      color: #4f46e5;
+      margin-bottom: 10px;
+    }
+    .card form {
+      display: flex;
+      flex-direction: column;
+    }
     .card input, .card select, .card textarea {
-      padding: 8px 10px; margin-bottom: 10px;
-      border: 1px solid #ccc; border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
     .card button {
-      padding: 10px; background: #4f46e5; color: white;
-      border: none; border-radius: 6px; cursor: pointer;
+      padding: 10px;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
     }
-    .card button:hover { background: #3b44cc; }
+    .card button:hover {
+      background: #3b44cc;
+    }
     .profile-img {
-      max-width: 100px; border-radius: 50%; margin-bottom: 10px; display: none;
+      max-width: 100px;
+      border-radius: 50%;
+      margin-bottom: 10px;
     }
     footer {
-      text-align: center; margin-top: 40px; padding: 15px;
-      font-size: 14px; background: #e0e7ff; color: #333;
+      text-align: center;
+      margin-top: 40px;
+      padding: 15px;
+      font-size: 14px;
+      background: #e0e7ff;
+      color: #333;
+    }
+    .action-btns {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .action-btns button {
+      flex: 1;
+      background: #10b981;
+    }
+    .action-btns button:hover {
+      background: #059669;
+    }
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    /* Floating Chatbot Button */
+    .chatbot-button {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 26px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      cursor: pointer;
+      transition: background 0.3s ease;
+      z-index: 1000;
+    }
+    .chatbot-button:hover {
+      background: #3730a3;
+    }
+    #examModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+    #examModal .modal-content {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 700px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
     }
   </style>
 </head>
@@ -55,82 +168,273 @@
   </header>
 
   <div class="container">
-    <!-- Profile -->
+    <!-- Original student cards (profile, marks, assignments, etc.) remain intact -->
+    <!-- Profile Card -->
     <div class="card">
-      <h3>Your Profile</h3>
-      <img id="profilePicPreview" class="profile-img" src="" />
-      <form id="profileForm">
-        <input id="fullName" placeholder="Full Name" />
-        <input id="phone" placeholder="Phone Number" />
-        <input id="dob" type="date" />
-        <select id="gender"><option>Male</option><option>Female</option><option>Other</option></select>
-        <input id="department" placeholder="Department" />
-        <input id="course" placeholder="Course" />
-        <input id="nationality" placeholder="Nationality" />
-        <input id="bloodGroup" placeholder="Blood Group" />
-        <input id="emergencyContact" placeholder="Emergency Contact" />
+      <h3>Student Profile</h3>
+      <form id="profileForm" enctype="multipart/form-data">
+        <input type="text" id="fullName" placeholder="Full Name" />
+        <input type="text" id="phone" placeholder="Phone" />
+        <input type="date" id="dob" />
+        <select id="gender">
+          <option value="">Select Gender</option>
+          <option>Male</option><option>Female</option><option>Other</option>
+        </select>
+        <input type="text" id="department" placeholder="Department" />
+        <input type="text" id="course" placeholder="Course" />
+        <input type="text" id="nationality" placeholder="Nationality" />
+        <input type="text" id="bloodGroup" placeholder="Blood Group" />
+        <input type="text" id="emergencyContact" placeholder="Emergency Contact" />
         <textarea id="address" placeholder="Address"></textarea>
-        <input id="emailDisplay" readonly />
-        <input type="file" id="photo" />
+        <input type="email" id="emailDisplay" disabled />
+        <input type="file" id="photo" accept="image/*" />
+        <img id="profilePicPreview" class="profile-img" style="display:none;" />
         <button type="submit">Save Profile</button>
       </form>
+      <div class="action-btns">
+        <button onclick="downloadProfilePDF()">Download Profile PDF</button>
+      </div>
     </div>
 
-    <!-- Attendance -->
+    <!-- Marks Card -->
+    <div class="card">
+      <h3>Exam Results</h3>
+      <form id="resultForm">
+        <input type="text" id="subject" placeholder="Subject" />
+        <input type="number" id="marks" placeholder="Marks" />
+        <button type="submit">Save Marks</button>
+      </form>
+      <canvas id="marksChart" height="180"></canvas>
+    </div>
+
+    <!-- Attendance Card -->
     <div class="card">
       <h3>Attendance</h3>
       <p id="attendanceInfo">Loading...</p>
     </div>
 
-    <!-- Timetable -->
+    <!-- Timetable Card -->
     <div class="card">
       <h3>Timetable</h3>
-      <p id="timetableInfo">Loading...</p>
+      <div id="timetableInfo">Loading...</div>
     </div>
 
-    <!-- Fees -->
+    <!-- Fees Card -->
     <div class="card">
       <h3>Fees</h3>
       <p id="feesInfo">Loading...</p>
     </div>
 
-    <!-- Result -->
+    <!-- Assignment Card -->
     <div class="card">
-      <h3>Enter Marks</h3>
-      <form id="resultForm">
-        <input id="subject" placeholder="Subject" />
-        <input id="marks" placeholder="Marks" type="number" />
-        <button type="submit">Save Marks</button>
-      </form>
-    </div>
-
-    <!-- Assignments -->
-    <div class="card">
-      <h3>Submit Assignment</h3>
+      <h3>Assignments</h3>
       <form id="assignmentForm">
-        <input id="assignmentTitle" placeholder="Assignment Title" />
-        <input id="assignmentLink" placeholder="Submission Link" />
-        <button type="submit">Submit</button>
+        <input type="text" id="assignmentTitle" placeholder="Title" />
+        <input type="url" id="assignmentLink" placeholder="Link" />
+        <button type="submit">Submit Assignment</button>
       </form>
     </div>
 
-    <!-- Leave Request -->
+    <!-- Leave Application Card -->
     <div class="card">
-      <h3>Request Leave</h3>
+      <h3>Apply Leave</h3>
       <form id="leaveForm">
-        <input id="leaveName" placeholder="Your Name" />
-        <input id="fromDate" type="date" />
-        <input id="toDate" type="date" />
+        <input type="text" id="leaveName" placeholder="Your Name" />
+        <input type="date" id="fromDate" />
+        <input type="date" id="toDate" />
         <textarea id="leaveReason" placeholder="Reason"></textarea>
-        <button type="submit">Apply Leave</button>
+        <button type="submit">Submit Leave</button>
       </form>
     </div>
 
     <!-- Notices -->
     <div class="card">
-      <h3>College Notices</h3>
-      <div id="notice-container">Loading notices...</div>
+      <h3>Notices</h3>
+      <div id="notice-container">Loading...</div>
     </div>
+
   </div>
 
   <footer>© All Rights Reserved — Gauri Kakad & Harsh Jadhao</footer>
+
+  <!-- Exam Calendar Modal -->
+  <div id="examModal">
+    <div class="modal-content">
+      <h3>📅 Upcoming Exams</h3>
+      <ul>
+        <li>12 Aug — Data Structures</li>
+        <li>15 Aug — DBMS</li>
+        <li>18 Aug — Web Tech</li>
+      </ul>
+      <button onclick="document.getElementById('examModal').style.display='none'">Close</button>
+    </div>
+  </div>
+
+  <!-- Chatbot FAB -->
+  <button class="chatbot-button" onclick="window.open('https://chat.openai.com', '_blank')">🤖</button>
+
+  <script>
+    const BASE_URL = "https://college-portal-backend-p1xm.onrender.com";
+    const email = localStorage.getItem("userEmail");
+
+    function logout() {
+      localStorage.clear();
+      alert("You have been logged out.");
+      window.location.href = "index.html";
+    }
+
+    fetch(`${BASE_URL}/api/notices`)
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById("notice-container");
+        container.innerHTML = "";
+        data.forEach(n => {
+          container.innerHTML += `<p><strong>${n.title}</strong>: ${n.message}</p>`;
+        });
+      });
+
+    fetch(`${BASE_URL}/api/student/${email}/attendance`)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("attendanceInfo").innerText = `Present: ${data.daysPresent} / ${data.totalDays} (${data.attendance})`;
+      });
+
+    fetch(`${BASE_URL}/api/student/${email}/timetable`)
+      .then(res => res.json())
+      .then(data => {
+        let html = "";
+        data.timetable.forEach(day => {
+          html += `<strong>${day.day}:</strong> ${day.slots.join(', ')}<br>`;
+        });
+        document.getElementById("timetableInfo").innerHTML = html;
+      });
+
+    fetch(`${BASE_URL}/api/student/${email}/fees`)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("feesInfo").innerText = `Total: ₹${data.total}, Paid: ₹${data.paid}, Pending: ₹${data.pending}`;
+      });
+
+    document.getElementById("profileForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append("fullName", document.getElementById("fullName").value);
+      formData.append("phone", document.getElementById("phone").value);
+      formData.append("dob", document.getElementById("dob").value);
+      formData.append("gender", document.getElementById("gender").value);
+      formData.append("department", document.getElementById("department").value);
+      formData.append("course", document.getElementById("course").value);
+      formData.append("nationality", document.getElementById("nationality").value);
+      formData.append("bloodGroup", document.getElementById("bloodGroup").value);
+      formData.append("emergencyContact", document.getElementById("emergencyContact").value);
+      formData.append("address", document.getElementById("address").value);
+      formData.append("email", email);
+      if (document.getElementById("photo").files[0]) {
+        formData.append("photo", document.getElementById("photo").files[0]);
+      }
+
+      const res = await fetch(`${BASE_URL}/api/student/${email}/profile`, {
+        method: "POST",
+        body: formData
+      });
+      const data = await res.json();
+      alert(data.message || "Profile updated");
+      loadProfile();
+    });
+
+    document.getElementById("resultForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const subject = document.getElementById("subject").value;
+      const marks = document.getElementById("marks").value;
+      const res = await fetch(`${BASE_URL}/api/student/${email}/results`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [subject]: marks })
+      });
+      const data = await res.json();
+      alert(data.message || "Marks saved");
+      loadMarks();
+    });
+
+    document.getElementById("assignmentForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const title = document.getElementById("assignmentTitle").value;
+      const link = document.getElementById("assignmentLink").value;
+      const res = await fetch(`${BASE_URL}/api/student/${email}/assignment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, link })
+      });
+      const data = await res.json();
+      alert(data.message || "Assignment submitted");
+    });
+
+    document.getElementById("leaveForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const body = {
+        name: document.getElementById("leaveName").value,
+        fromDate: document.getElementById("fromDate").value,
+        toDate: document.getElementById("toDate").value,
+        reason: document.getElementById("leaveReason").value
+      };
+      const res = await fetch(`${BASE_URL}/api/student/${email}/leave`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      alert(data.message || "Leave submitted");
+    });
+
+    async function loadProfile() {
+      const res = await fetch(`${BASE_URL}/api/student/${email}/profile`);
+      if (!res.ok) return;
+      const data = await res.json();
+      document.getElementById("fullName").value = data.fullName || "";
+      document.getElementById("phone").value = data.phone || "";
+      document.getElementById("dob").value = data.dob || "";
+      document.getElementById("gender").value = data.gender || "";
+      document.getElementById("department").value = data.department || "";
+      document.getElementById("course").value = data.course || "";
+      document.getElementById("nationality").value = data.nationality || "";
+      document.getElementById("bloodGroup").value = data.bloodGroup || "";
+      document.getElementById("emergencyContact").value = data.emergencyContact || "";
+      document.getElementById("address").value = data.address || "";
+      document.getElementById("emailDisplay").value = data.email || email;
+      if (data.photo) {
+        document.getElementById("profilePicPreview").src = data.photo;
+        document.getElementById("profilePicPreview").style.display = "block";
+      }
+    }
+
+    async function loadMarks() {
+      const res = await fetch(`${BASE_URL}/api/student/${email}/results`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const ctx = document.getElementById("marksChart").getContext("2d");
+      const subjects = Object.keys(data.marks);
+      const scores = Object.values(data.marks);
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: subjects,
+          datasets: [{ label: "Marks", data: scores, backgroundColor: "#4f46e5" }]
+        },
+        options: { responsive: true }
+      });
+    }
+
+    function downloadProfilePDF() {
+      html2canvas(document.getElementById("profileForm")).then(canvas => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jspdf.jsPDF();
+        pdf.addImage(imgData, "PNG", 10, 10);
+        pdf.save("profile.pdf");
+      });
+    }
+
+    loadProfile();
+    loadMarks();
+  </script>
+</body>
+</html>
