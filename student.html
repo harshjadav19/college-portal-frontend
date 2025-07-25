@@ -39,7 +39,7 @@
     }
     .card button:hover { background: #3b44cc; }
     .profile-img {
-      max-width: 100px; border-radius: 50%; margin-bottom: 10px;
+      max-width: 100px; border-radius: 50%; margin-bottom: 10px; display: none;
     }
     footer {
       text-align: center; margin-top: 40px; padding: 15px;
@@ -55,161 +55,82 @@
   </header>
 
   <div class="container">
-    <!-- All cards same as before -->
-    <!-- ... skipped for brevity ... -->
+    <!-- Profile -->
+    <div class="card">
+      <h3>Your Profile</h3>
+      <img id="profilePicPreview" class="profile-img" src="" />
+      <form id="profileForm">
+        <input id="fullName" placeholder="Full Name" />
+        <input id="phone" placeholder="Phone Number" />
+        <input id="dob" type="date" />
+        <select id="gender"><option>Male</option><option>Female</option><option>Other</option></select>
+        <input id="department" placeholder="Department" />
+        <input id="course" placeholder="Course" />
+        <input id="nationality" placeholder="Nationality" />
+        <input id="bloodGroup" placeholder="Blood Group" />
+        <input id="emergencyContact" placeholder="Emergency Contact" />
+        <textarea id="address" placeholder="Address"></textarea>
+        <input id="emailDisplay" readonly />
+        <input type="file" id="photo" />
+        <button type="submit">Save Profile</button>
+      </form>
+    </div>
+
+    <!-- Attendance -->
+    <div class="card">
+      <h3>Attendance</h3>
+      <p id="attendanceInfo">Loading...</p>
+    </div>
+
+    <!-- Timetable -->
+    <div class="card">
+      <h3>Timetable</h3>
+      <p id="timetableInfo">Loading...</p>
+    </div>
+
+    <!-- Fees -->
+    <div class="card">
+      <h3>Fees</h3>
+      <p id="feesInfo">Loading...</p>
+    </div>
+
+    <!-- Result -->
+    <div class="card">
+      <h3>Enter Marks</h3>
+      <form id="resultForm">
+        <input id="subject" placeholder="Subject" />
+        <input id="marks" placeholder="Marks" type="number" />
+        <button type="submit">Save Marks</button>
+      </form>
+    </div>
+
+    <!-- Assignments -->
+    <div class="card">
+      <h3>Submit Assignment</h3>
+      <form id="assignmentForm">
+        <input id="assignmentTitle" placeholder="Assignment Title" />
+        <input id="assignmentLink" placeholder="Submission Link" />
+        <button type="submit">Submit</button>
+      </form>
+    </div>
+
+    <!-- Leave Request -->
+    <div class="card">
+      <h3>Request Leave</h3>
+      <form id="leaveForm">
+        <input id="leaveName" placeholder="Your Name" />
+        <input id="fromDate" type="date" />
+        <input id="toDate" type="date" />
+        <textarea id="leaveReason" placeholder="Reason"></textarea>
+        <button type="submit">Apply Leave</button>
+      </form>
+    </div>
+
+    <!-- Notices -->
+    <div class="card">
+      <h3>College Notices</h3>
+      <div id="notice-container">Loading notices...</div>
+    </div>
   </div>
 
   <footer>© All Rights Reserved — Gauri Kakad & Harsh Jadhao</footer>
-
-  <script>
-    const BASE_URL = "https://college-portal-backend-p1xm.onrender.com"; // 🔔 Replace before deployment
-    const email = localStorage.getItem("userEmail");
-
-    function logout() {
-      localStorage.clear();
-      alert("You have been logged out.");
-      window.location.href = "index.html";
-    }
-
-    // Load Notices
-    fetch(`${BASE_URL}/api/notices`)
-      .then(res => res.json())
-      .then(data => {
-        const container = document.getElementById("notice-container");
-        container.innerHTML = "";
-        data.forEach(n => {
-          container.innerHTML += `<p><strong>${n.title}</strong>: ${n.message}</p>`;
-        });
-      });
-
-    fetch(`${BASE_URL}/api/student/${email}/attendance`)
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("attendanceInfo").innerText =
-          `Present: ${data.daysPresent} / ${data.totalDays} (${data.attendance})`;
-      });
-
-    fetch(`${BASE_URL}/api/student/${email}/timetable`)
-      .then(res => res.json())
-      .then(data => {
-        let html = "";
-        data.timetable.forEach(day => {
-          html += `<strong>${day.day}:</strong> ${day.slots.join(', ')}<br>`;
-        });
-        document.getElementById("timetableInfo").innerHTML = html;
-      });
-
-    fetch(`${BASE_URL}/api/student/${email}/fees`)
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("feesInfo").innerText =
-          `Total: ₹${data.total}, Paid: ₹${data.paid}, Pending: ₹${data.pending}`;
-      });
-    document.getElementById("profileForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData();
-      formData.append("fullName", document.getElementById("fullName").value);
-      formData.append("phone", document.getElementById("phone").value);
-      formData.append("dob", document.getElementById("dob").value);
-      formData.append("gender", document.getElementById("gender").value);
-      formData.append("department", document.getElementById("department").value);
-      formData.append("course", document.getElementById("course").value);
-      formData.append("nationality", document.getElementById("nationality").value);
-      formData.append("bloodGroup", document.getElementById("bloodGroup").value);
-      formData.append("emergencyContact", document.getElementById("emergencyContact").value);
-      formData.append("address", document.getElementById("address").value);
-      formData.append("email", email);
-      if (document.getElementById("photo").files[0]) {
-        formData.append("photo", document.getElementById("photo").files[0]);
-      }
-
-      const res = await fetch(`${BASE_URL}/api/student/${email}/profile`, {
-        method: "POST",
-        body: formData
-      });
-      const data = await res.json();
-      alert(data.message || "Profile updated");
-      loadProfile();
-    });
-
-    document.getElementById("resultForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const subject = document.getElementById("subject").value;
-      const marks = document.getElementById("marks").value;
-      const res = await fetch(`${BASE_URL}/api/student/${email}/results`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [subject]: marks })
-      });
-      const data = await res.json();
-      alert(data.message || "Marks saved");
-      loadMarks();
-    });
-
-    document.getElementById("assignmentForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const title = document.getElementById("assignmentTitle").value;
-      const link = document.getElementById("assignmentLink").value;
-      const res = await fetch(`${BASE_URL}/api/student/${email}/assignment`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, link })
-      });
-      const data = await res.json();
-      alert(data.message || "Assignment submitted");
-    });
-
-    document.getElementById("leaveForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const body = {
-        name: document.getElementById("leaveName").value,
-        fromDate: document.getElementById("fromDate").value,
-        toDate: document.getElementById("toDate").value,
-        reason: document.getElementById("leaveReason").value
-      };
-      const res = await fetch(`${BASE_URL}/api/student/${email}/leave`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
-      alert(data.message || "Leave submitted");
-    });
-
-    async function loadProfile() {
-      const res = await fetch(`${BASE_URL}/api/student/${email}/profile`);
-      if (!res.ok) return;
-      const data = await res.json();
-      document.getElementById("fullName").value = data.fullName || "";
-      document.getElementById("phone").value = data.phone || "";
-      document.getElementById("dob").value = data.dob || "";
-      document.getElementById("gender").value = data.gender || "";
-      document.getElementById("department").value = data.department || "";
-      document.getElementById("course").value = data.course || "";
-      document.getElementById("nationality").value = data.nationality || "";
-      document.getElementById("bloodGroup").value = data.bloodGroup || "";
-      document.getElementById("emergencyContact").value = data.emergencyContact || "";
-      document.getElementById("address").value = data.address || "";
-      document.getElementById("emailDisplay").value = data.email || email;
-      if (data.photo) {
-        document.getElementById("profilePicPreview").src = data.photo;
-        document.getElementById("profilePicPreview").style.display = "block";
-      }
-    }
-
-    async function loadMarks() {
-      const res = await fetch(`${BASE_URL}/api/student/${email}/results`);
-      if (!res.ok) return;
-      const data = await res.json();
-      const card = document.querySelector("#resultForm").parentElement;
-      card.innerHTML += "<h4>Saved Marks:</h4>";
-      for (let sub in data.marks) {
-        card.innerHTML += `<p>${sub}: ${data.marks[sub]}</p>`;
-      }
-    }
-
-    loadProfile();
-    loadMarks();
-  </script>
-</body>
-</html>
